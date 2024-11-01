@@ -128,6 +128,7 @@ with app.app_context():
 # TODO: Use Werkzeug to hash the user's password when creating a new user.
 @app.route('/register', methods=["GET","POST"])
 def register():
+    title="The DevOps Corner"
 
     form = RegisterForm()
     
@@ -154,12 +155,14 @@ def register():
         return redirect(url_for('get_all_posts'))
 
 
-    return render_template("register.html", form=form)
+    return render_template("register.html", title=title, form=form)
 
 
 # TODO: Retrieve a user from the database based on their email. 
 @app.route('/login', methods=["GET", "POST"])
 def login():
+
+    title="The DevOps Corner"
 
     form = LoginForm()
 
@@ -178,12 +181,12 @@ def login():
             else:
                 #if password is incorrect flash message and return to login page.
                 flash("Password incorrect, Please try again")
-                return render_template("login.html", form=form)
+                return render_template("login.html", title=title, form=form)
 
         #if email doest not exit flash message and return to login page.
         flash("The email does not exist. Please try again.")
 
-    return render_template("login.html", form=form)
+    return render_template("login.html", title=title, form=form)
 
 
 @app.route('/logout')
@@ -194,14 +197,20 @@ def logout():
 
 @app.route('/')
 def get_all_posts():
+
+    title="The DevOps Corner"
+    
     result = db.session.execute(db.select(BlogPost))
     posts = result.scalars().all()
-    return render_template("index.html", all_posts=posts, logged_in=current_user.is_authenticated)
+    return render_template("index.html", title=title, all_posts=posts, logged_in=current_user.is_authenticated)
 
 
 # TODO: Allow logged-in users to comment on posts
 @app.route("/post/<int:post_id>", methods=["GET","POST"])
 def show_post(post_id):
+
+    title="The DevOps Corner"
+
     requested_post = db.get_or_404(BlogPost, post_id)
 
     comment_form = CommentForm()
@@ -216,7 +225,7 @@ def show_post(post_id):
         db.session.add(new_comment)
         db.session.commit()
 
-    return render_template("post.html", post=requested_post, form=comment_form, current_user=current_user, logged_in=current_user.is_authenticated)
+    return render_template("post.html", title=title, post=requested_post, form=comment_form, current_user=current_user, logged_in=current_user.is_authenticated)
 
 
 # TODO: Use a decorator so only an admin user can create a new post
@@ -235,6 +244,9 @@ def admin_only(f):
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
+
+    title="The DevOps Corner"
+
     form = CreatePostForm()
     if form.validate_on_submit():
         new_post = BlogPost(
@@ -248,13 +260,16 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form, current_user=current_user, logged_in=current_user.is_authenticated)
+    return render_template("make-post.html", title=title, form=form, current_user=current_user, logged_in=current_user.is_authenticated)
 
 
 # TODO: Use a decorator so only an admin user can edit a post
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @admin_only
 def edit_post(post_id):
+
+    title="The DevOps Corner"
+
     post = db.get_or_404(BlogPost, post_id)
     edit_form = CreatePostForm(
         title=post.title,
@@ -271,7 +286,7 @@ def edit_post(post_id):
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
-    return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user, logged_in=current_user.is_authenticated)
+    return render_template("make-post.html", title=title, form=edit_form, is_edit=True, current_user=current_user, logged_in=current_user.is_authenticated)
 
 
 # TODO: Use a decorator so only an admin user can delete a post
@@ -286,12 +301,16 @@ def delete_post(post_id):
 
 @app.route("/about")
 def about():
-    return render_template("about.html", logged_in=current_user.is_authenticated)
+    title="The DevOps Corner"
+
+    return render_template("about.html", title=title, logged_in=current_user.is_authenticated)
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html", logged_in=current_user.is_authenticated)
+    title="The DevOps Corner"
+
+    return render_template("contact.html", title=title, logged_in=current_user.is_authenticated)
 
 
 if __name__ == "__main__":
